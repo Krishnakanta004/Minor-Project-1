@@ -1,0 +1,16 @@
+.password-diary{
+    margin-top: 2rem;
+}
+
+.extras{
+    border: 1px solid red;
+    border-radius: 5px;
+    padding: 2rem;
+    margin: 2rem;
+    box-shadow: 0 3px 10px rgb(0 0 0 / 0.2);
+
+}
+
+input{
+    text-align: center;
+}

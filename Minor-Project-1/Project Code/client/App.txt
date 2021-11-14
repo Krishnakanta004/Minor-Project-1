@@ -1,0 +1,120 @@
+import "./App.css";
+import { useState, useEffect } from "react";
+import Axios from "axios";
+import PasswordStrengthMeter from "./components/PasswordStrengthMeter";
+
+function App() {
+  const [password, setPassword] = useState("")
+  const [title, setTitle] = useState("")
+  const [passwordList, setPasswordList] = useState([])
+  const [passwordShown, setPasswordShown] = useState(false);
+
+  const togglePassword = () => {
+    // When the handler is invoked
+    // chnage inverse the boolean state passwordShown
+    setPasswordShown(!passwordShown);
+  };
+
+  useEffect(() => {
+    Axios.get("http://localhost:3001/showpassword").then((response) => {
+      setPasswordList(response.data);
+    });
+  }, []);
+
+  const addPassword = () => {
+    Axios.post("http://localhost:3001/addpassword", {
+      password: password, 
+      title: title,
+    });
+  };
+
+  const decryptPassword = (encryption) => {
+    Axios.post("http://localhost:3001/decryptpassword", {
+      password: encryption.password, 
+      iv: encryption.iv,
+    }).then((response) => {
+      setPasswordList(passwordList.map((val) => {
+        return val.id === encryption.id ? {id: val.id, password: val.password, title: response.data, iv: val.iv} : val;
+      }));
+    });
+  };
+
+  return (
+    <div className="containers">
+
+    <h1 className="text-center my-1">Password Diary</h1>
+
+      <div className="col-md-4 mx-auto text-center password-diary">
+        
+          <div className="form-group">
+            <input 
+              type="text" 
+              className="form-control shadow-none mb-3" 
+              placeholder="Enter user/site Name"
+              onChange={(event) => {
+              setTitle(event.target.value);
+            }}
+            />
+
+            <input 
+              type={passwordShown ? "text" : "password"} 
+              className="form-control shadow-none"
+              placeholder="Enter Password" 
+              onChange={(event) => {
+              setPassword(event.target.value);
+            }}
+            />
+          </div>
+            
+        <span className="text-end">
+          <PasswordStrengthMeter password={ password } />
+        </span>
+
+        <div class="d-grid col-6 mx-auto">
+          <button 
+            type="button" class="btn btn-outline-danger shadow-none btn-sm mb-3"
+            onClick={togglePassword}>Show Password
+          </button>  
+          <button 
+            type="button" class="btn btn-primary shadow-none btn-lg" 
+            onClick={addPassword}>Add Password
+          </button>
+        </div>
+        <div className="m-4">        
+          <p>🔻 YOUR SAVED PASSWORDS 🔻</p>
+        </div>
+        <div className = "Password">
+          {passwordList.map((val, key) => {
+            return (
+              <div class="d-grid col-10 mx-auto m-3">
+                <button type="button" class="btn btn-dark btn-sm shadow-none">
+                <div className = "password" onClick = {() => {decryptPassword({password: val.password, iv: val.iv, id: val.id})}} key={key}> 
+                  <h3> {val.title} </h3>
+                </div>
+                </button>
+              </div>
+            );
+          })}
+        </div> 
+
+        
+        <div className="extras ">
+          <h3>Tips &amp; Tricks</h3>
+            <p>Password must contain more than 8 characters.</p>
+            <p>It must contain a combination of Small letters, <br/> Capital letters, Symbols and Numbers.</p>
+            <p>Avoid using personal details in passwords.</p>
+            <p>Use unique passwords for each different account.</p>
+        </div>
+        
+
+        <div className="extra">
+          <h6>Developed by Team E-10</h6>
+        </div>
+        
+      </div>
+
+    </div>
+  );
+}
+
+export default App;
